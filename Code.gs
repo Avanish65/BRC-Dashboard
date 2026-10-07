@@ -4600,7 +4600,11 @@ function getReportDrillRows(params) {
         var baseRow = {
           srNo: String(r[COL.SR]||''), date: dateStr, trainNo: String(r[COL.TRAIN]||''),
           locoNo: String(r[COL.LOCO]||''), section: String(r[COL.SECTION]||''),
-          status: String(r[COL.STATUS]||'Pending'), flag: String(r[COL.FLAG]||'None')
+          status: String(r[COL.STATUS]||'Pending'), flag: String(r[COL.FLAG]||'None'),
+          // Journey Summary link: lets the report's Exclude dialog offer
+          // "No Mode / Brake Event" as a linked category (same predicate the
+          // report table itself uses, so counts always agree).
+          special: _rptSpecialMatch(r, 'no mode') ? ['No Mode / Brake Event'] : []
         };
 
         if (kind === 'special') {
@@ -4696,6 +4700,9 @@ function getReportExcludeSubset(params) {
       } else {
         var kindToks = _rptSplitVals(r[kindCol]).map(function(t) { return t.toLowerCase(); });
         if (kindToks.indexOf(typeWanted) < 0) return false;
+      }
+      if (params.condKind === 'special') {
+        return Array.from(condSet).some(function(v) { return _rptSpecialMatch(r, v); });
       }
       var condToks = _rptSplitVals(r[condCol]).map(function(t) { return t.toLowerCase(); });
       return condToks.some(function(t) { return condSet.has(t); });
